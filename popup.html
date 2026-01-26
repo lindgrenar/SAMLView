@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html data-theme="dark">
+
+<head>
+  <meta charset="utf-8" />
+  <title>SAMLView</title>
+  <link rel="stylesheet" href="ui/styles.css" />
+  <link rel="stylesheet" href="ui/styles_flow.css" />
+  <style>
+    html,
+    body {
+      width: 600px;
+      min-width: 600px;
+      max-width: 600px;
+    }
+
+    body {
+      border: 2px solid #a5d8ff;
+      border-radius: 8px;
+    }
+
+    main {
+      max-height: 540px;
+      overflow: auto;
+    }
+
+    .status-bar #status {
+      font-size: 12px;
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #toggleBtn {
+      min-width: 120px;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .message-container {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 1000;
+    }
+
+    /* Flow view in popup */
+    body.flow-mode main {
+      max-height: 600px;
+      min-height: 500px;
+      overflow: auto;
+    }
+
+    body.flow-mode #list {
+      display: none;
+    }
+
+    body.flow-mode #flowContainer {
+      display: block;
+      padding: 12px;
+      overflow-x: hidden;
+    }
+
+    body:not(.flow-mode) #flowContainer {
+      display: none;
+    }
+
+    body.flow-mode .flow-container {
+      grid-template-columns: 120px 1fr 120px;
+      gap: 10px 8px;
+      max-width: 100%;
+      width: 100%;
+    }
+
+    body.flow-mode .detail-section h2 {
+      font-size: 14px;
+      margin: 0 0 6px 0;
+      font-weight: 600;
+    }
+
+    body.flow-mode .flow-help {
+      font-size: 11px;
+      margin: 0 0 12px 0;
+      color: var(--muted);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="message-container" id="messageContainer"></div>
+  <header>
+    <h1 class="logo">SAMLView</h1>
+    <div class="actions">
+      <button id="toggleBtn" class="btn btn-primary">Start Capture</button>
+      <button id="flowViewBtn" class="btn">Flow Diagram</button>
+      <button id="themeToggle" class="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">
+        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" fill="currentColor" style="display:none;">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      </button>
+    </div>
+  </header>
+  <section class="status-bar">
+    <span id="status">Not capturing</span>
+    <div class="actions right">
+      <button id="clearBtn" class="btn btn-danger">Clear</button>
+      <button id="importBtn" class="btn">Import</button>
+      <button id="exportBtn" class="btn btn-success">Export</button>
+      <input id="importFile" type="file" accept=".saml,.txt,.xml" style="display:none;" />
+    </div>
+  </section>
+  <main>
+    <ul id="list" class="list"></ul>
+    <div id="flowContainer"></div>
+  </main>
+  <script src="ui/common.js"></script>
+  <script src="popup.js"></script>
+  <script src="ui/tracer.js"></script>
+</body>
+
+</html>
