@@ -8,4 +8,4 @@ SAMLView is designed to capture, decode, and visualize SAML authentication flows
 * Captures based on a single chosen tab, automatically includes any spawned tabs, redirects, or similar.
 * Supports exporting and importing.
 
-Screenshots can be found with the extension @ [Mozilla Add-on](https://addons.mozilla.org/en-US/firefox/addon/samlview/). 
+Screenshots can be found with the extension @ [https://addons.mozilla.org](https://addons.mozilla.org/en-US/firefox/addon/samlview/). 
