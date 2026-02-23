@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "SAMLView",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Capture and display decoded SAML messages for a single login flow on Firefox.",
   "author": "lindgrenar",
   "homepage_url": "https://github.com/lindgrenar/SAMLView",
