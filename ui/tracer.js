@@ -388,34 +388,24 @@ async function exportSelected() {
       return;
     }
 
-    // Export individual XML files with ordering prefix
-    let index = 1;
-    for (const id of idsToExport) {
-      const m = byId.get(id);
-      if (!m) continue;
+    const exportData = {
+      version: '2.0',
+      timestamp: new Date().toISOString(),
+      messages: idsToExport.map(id => byId.get(id)).filter(m => m)
+    };
 
-      const prefix = String(index).padStart(3, '0');
-      const kind = m.kind || 'SAML';
-      const filename = `${prefix}_${kind}.xml`;
+    const json = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SAMLView_Export_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
 
-      const blob = new Blob([m.xml], { type: 'application/xml;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-
-      index++;
-      // Small delay between downloads to avoid browser blocking
-      if (index <= idsToExport.length) {
-        await new Promise(r => setTimeout(r, 100));
-      }
-    }
-
-    if (messageContainer) showSuccess(`Exported ${index - 1} XML file(s)`, messageContainer);
+    if (messageContainer) showSuccess(`Exported ${exportData.messages.length} messages`, messageContainer);
   } catch (error) {
     console.error('[SAMLView] Export failed:', error);
     if (messageContainer) showError('Export failed', messageContainer);
@@ -435,9 +425,32 @@ async function importFromFile(file) {
     const content = await file.text();
     const trimmed = content.trim();
 
-    // Check if it looks like XML
-    if (!trimmed.startsWith('<')) {
-      if (messageContainer) showError('File does not appear to be XML', messageContainer);
+    let itemsToImport = [];
+
+    // Try JSON first
+    try {
+      const json = JSON.parse(trimmed);
+      if (json.messages && Array.isArray(json.messages)) {
+        itemsToImport = json.messages;
+      } else if (Array.isArray(json)) {
+        itemsToImport = json; // Legacy array format
+      }
+    } catch (e) {
+      // Not JSON, proceed to text/XML fallback
+    }
+
+    // Fallback: use splitExportedXML for raw XML or legacy text format
+    if (itemsToImport.length === 0) {
+      if (typeof splitExportedXML === 'function') {
+        const xmls = splitExportedXML(trimmed);
+        itemsToImport = xmls.map(xml => ({ xml }));
+      } else if (looksLikeXML(trimmed)) {
+        itemsToImport = [{ xml: trimmed }];
+      }
+    }
+
+    if (itemsToImport.length === 0) {
+      if (messageContainer) showError('File format not recognized', messageContainer);
       return;
     }
 
@@ -445,16 +458,16 @@ async function importFromFile(file) {
     const result = await browser.runtime.sendMessage({
       type: 'importMessages',
       windowId,
-      items: [{ xml: trimmed }]
+      items: itemsToImport
     });
 
     console.log('[SAMLView] Import result:', result);
     await refresh();
 
     if (result && result.imported > 0) {
-      if (messageContainer) showSuccess(`✓ Imported ${file.name}`, messageContainer);
+      if (messageContainer) showSuccess(`✓ Imported ${result.imported} messages`, messageContainer);
     } else {
-      if (messageContainer) showError('Failed to import. Check file format.', messageContainer);
+      if (messageContainer) showError('No valid messages imported', messageContainer);
     }
   } catch (error) {
     console.error('[SAMLView] Import failed:', error);

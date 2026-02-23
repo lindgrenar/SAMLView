@@ -185,7 +185,6 @@ function parseSaml(xmlStr) {
 }
 
 // Export format constants
-const EXPORT_VERSION = '1.0';
 const EXPORT_DELIMITER = '----- SAMLVIEW ENTRY -----';
 
 // Split exported XML
